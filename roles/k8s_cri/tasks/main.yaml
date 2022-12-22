@@ -1,0 +1,59 @@
+---
+- name: Ensure task is run on tested distrib
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution in ['Ubuntu']
+  tags: always
+
+- name: Ensure task is run on tested distrib release
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution_version in ['20.04','22.04']
+  when: ansible_distribution == 'Ubuntu'
+  tags: always
+
+# CRI
+- name: Ensure CRI (Container Runtime Interface) plugin is valid
+  ansible.builtin.assert:
+    that:
+      - cri_plugin in [ 'containerd', 'crio']
+  tags: always
+
+- name: Ensure CRI (Container Runtime Interface) plugin is valid
+  ansible.builtin.assert:
+    that:
+      - k8s_version is defined
+      - k8s_version_patch is defined
+  when: cri_plugin == "crio"
+  tags: always
+
+- name: Ensure CRI (Container Runtime Interface) compatible Kubernetes version is available
+  ansible.builtin.assert:
+    that:
+      - k8s_version <= crio_highest_k8s_version
+      - k8s_version_patch <= crio_highest_k8s_version_patch
+    fail_msg:
+      "Version {{ k8s_version }}.{{ k8s_version_patch }} is greater
+      than the highest available version {{ crio_highest_k8s_version }}.{{ crio_highest_k8s_version_patch }}"
+  when: cri_plugin == "crio"
+  tags: always
+
+
+#### Container Runtime setup
+- name: Setup container runtime CRI - containerd
+  ansible.builtin.import_tasks: cri_containerd.yml
+  when: cri_plugin == "containerd"
+
+#### Container Runtime setup
+- name: Setup container runtime CRI - cri-o
+  ansible.builtin.import_tasks: cri_crio.yml
+  when: cri_plugin == "crio"
+
+- name: CRI - Install bash completion
+  ansible.builtin.shell:
+    cmd: "{{ item }} completion bash > /etc/bash_completion.d/{{ item }}"
+  changed_when: false
+  loop:
+    - crictl
+  tags:
+    - install

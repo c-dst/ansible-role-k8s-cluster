@@ -1,0 +1,60 @@
+---
+# containerd setup
+## https://containerd.io/docs/getting-started/
+
+- name: CRI - Containerd - Install prerequisite packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop: "{{ containerd_packages }}"
+  tags:
+    - install
+
+- name: CRI - Containerd - Create config directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: omit
+  loop:
+    - "/etc/containerd"
+  tags:
+    - install
+
+- name: CRI - Containerd - Download and install
+  ansible.builtin.unarchive:
+    src: "{{ containerd_package_url }}"
+    dest: "/"
+    owner: root
+    group: root
+    mode: omit
+    remote_src: true
+  tags:
+    - install
+  notify:
+    - Reload systemd
+    - Enable start containerd
+
+- name: CRI - Containerd - Configure CNI
+  ansible.builtin.replace:
+    path: /etc/cni/net.d/10-containerd-net.conflist
+    regexp: '\"subnet\":\s\"(\d)+\.(\d)+\.(\d)+\.(\d)+\/(\d)+\"'
+    replace: '"subnet": "{{ k8s_networking.podSubnet }}"'
+  register: default_replace
+  failed_when: default_replace.rc !=0
+  when: k8s_networking.podSubnet is defined
+  tags:
+    - configure
+  notify:
+    - Restart containerd
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: CRI - Containerd - Set socket
+  ansible.builtin.set_fact:
+    cri_socket: "{{ containerd_socket }}"
+  tags:
+    - configure

@@ -1,0 +1,35 @@
+---
+# handlers file
+## systemd
+### reload
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+## cri-o
+### enable and start
+- name: Enable start crio
+  ansible.builtin.service:
+    name: crio
+    state: started
+    enabled: true
+
+### restart
+- name: Restart crio
+  ansible.builtin.service:
+    name: crio
+    state: restarted
+
+## containerd
+### enable and start
+- name: Enable start containerd
+  ansible.builtin.service:
+    name: containerd
+    state: started
+    enabled: true
+
+### restart
+- name: Restart containerd
+  ansible.builtin.service:
+    name: containerd
+    state: restarted

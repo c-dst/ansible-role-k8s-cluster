@@ -1,0 +1,48 @@
+---
+# CRI - Conversion from ansible_architecture to package
+cri_arch:
+  x86_64: amd64
+
+# CRI : containerd
+## containerd version
+containerd_release_version: 1.6.14
+
+## Download URL
+containerd_package_url:
+  "https://github.com/containerd/containerd/releases/download/v{{ containerd_release_version }}/cri-containerd-cni-{{ containerd_release_version }}-{{ ansible_system | lower }}-{{ cri_arch[ansible_architecture] }}.tar.gz"
+
+## Packages requirements
+containerd_packages: []
+
+### Socket file
+containerd_socket: "unix:///run/containerd/containerd.sock"
+
+# CRI : cri-o
+## Cri-o - Kubernetes highest supported version
+crio_highest_k8s_version: 1.24
+crio_highest_k8s_version_patch: 3
+
+## Cri-o - APT Key / Repository
+crio_apt_keyring_dir: "/usr/share/keyrings"
+
+crio_apt_repository_keys:
+  opensuse_libcontainers_crio_keyring.gpg:
+    "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ k8s_version }}/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/Release.key"
+  opensuse_crio_libcontainers_keyring.gpg:
+    "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/Release.key"
+
+crio_apt_repository_urls:
+  - "deb [signed-by={{ crio_apt_keyring_dir }}/opensuse_libcontainers_crio_keyring.gpg]
+    https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/ /"
+  - "deb [signed-by={{ crio_apt_keyring_dir }}/opensuse_crio_libcontainers_keyring.gpg]
+    https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ k8s_version }}/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/ /"
+
+### Cri-o - Packages equirements
+crio_packages:
+  - cri-o
+  - cri-o-runc
+  - cri-tools
+  - containernetworking-plugins
+
+### Socket file
+crio_socket: "unix:///var/run/crio/crio.sock"

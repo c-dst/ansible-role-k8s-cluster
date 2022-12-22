@@ -1,0 +1,95 @@
+---
+# cri-o setup
+# - name: Add cri-o apt repository key
+#   ansible.builtin.apt_key:
+#     url: "{{ item }}"
+#     state: present
+#   loop: "{{ crio_apt_repository_keys }}"
+
+# - name: Configure cri-o apt repository
+#   ansible.builtin.apt_repository:
+#     repo: "{{ item }}"
+#     state: present
+#   loop: "{{ crio_apt_repository_urls }}"
+
+
+- name: CRI - CRI-O - Add repository key
+  ansible.builtin.apt_key:
+    url: "{{ crio_apt_repository_keys[item] }}"
+    keyring: "{{ crio_apt_keyring_dir }}/{{ item }}"
+    state: present
+  loop: "{{ crio_apt_repository_keys | list }}"
+  tags:
+    - install
+
+- name: CRI - CRI-O - Configure apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    state: present
+  loop: "{{ crio_apt_repository_urls }}"
+  tags:
+    - install
+
+- name: CRI - CRI-O - Install
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop: "{{ crio_packages }}"
+  tags:
+    - install
+  notify:
+    - Reload systemd
+    - Enable start crio
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - always
+
+- name: CRI - CRI-O - Prevent packages from being upgraded
+  ansible.builtin.dpkg_selections:
+    name: "{{ item.split('=').0 }}"
+    selection: hold
+  loop: "{{ crio_packages }}"
+  tags:
+    - install
+
+- name: CRI - CRI-O - Configure CNI
+  ansible.builtin.replace:
+    path: /etc/cni/net.d/100-crio-bridge.conf
+    regexp: '\"subnet\":\s\"(\d)+\.(\d)+\.(\d)+\.(\d)+\/(\d)+\"'
+    replace: '"subnet": "{{ k8s_networking.podSubnet }}"'
+  register: default_replace
+  failed_when: default_replace.rc !=0
+  when: k8s_networking.podSubnet is defined
+  tags:
+    - configure
+  notify:
+    - Restart crio
+
+- name: CRI - CRI-O - Configure
+  ansible.builtin.copy:
+    src: "crio/{{ item }}"
+    dest: "/etc/crio/crio.conf.d/{{ item }}"
+    owner: root
+    group: root
+    mode: omit
+  loop:
+    - 02-cgroup-manager.conf
+    - 03-network.conf
+  tags:
+    - configure
+  notify:
+    - Restart crio
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - always
+
+- name: CRI - CRI-O - Set socket
+  ansible.builtin.set_fact:
+    cri_socket: "{{ crio_socket }}"
+  tags:
+    - configure
