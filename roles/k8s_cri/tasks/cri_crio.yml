@@ -24,9 +24,10 @@
 
 - name: CRI - CRI-O - Configure apt repository
   ansible.builtin.apt_repository:
-    repo: "{{ item }}"
+    filename: "{{ item }}"
+    repo: "{{ crio_apt_repository_urls[item] }}"
     state: present
-  loop: "{{ crio_apt_repository_urls }}"
+  loop: "{{ crio_apt_repository_urls | list }}"
   tags:
     - install
 
@@ -46,14 +47,6 @@
   ansible.builtin.meta: flush_handlers
   tags:
     - always
-
-- name: CRI - CRI-O - Prevent packages from being upgraded
-  ansible.builtin.dpkg_selections:
-    name: "{{ item.split('=').0 }}"
-    selection: hold
-  loop: "{{ crio_packages }}"
-  tags:
-    - install
 
 - name: CRI - CRI-O - Configure CNI
   ansible.builtin.replace:

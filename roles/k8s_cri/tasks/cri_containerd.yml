@@ -23,19 +23,29 @@
   tags:
     - install
 
-- name: CRI - Containerd - Download and install
-  ansible.builtin.unarchive:
-    src: "{{ containerd_package_url }}"
-    dest: "/"
+- name: CRI - Containerd - Download
+  ansible.builtin.get_url:
+    url: "{{ containerd_package_url }}"
+    dest: "/tmp/{{ containerd_package_file }}"
+    checksum: "sha256:{{ containerd_package_url }}.sha256sum"
     owner: root
     group: root
     mode: omit
-    remote_src: true
+  register: __dowload_containerd
   tags:
     - install
   notify:
     - Reload systemd
     - Enable start containerd
+
+- name: CRI - Containerd - Install
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ containerd_package_file }}"
+    dest: "/"
+    remote_src: true
+  when: __dowload_containerd.elapsed > 0
+  tags:
+    - install
 
 - name: CRI - Containerd - Configure CNI
   ansible.builtin.replace:

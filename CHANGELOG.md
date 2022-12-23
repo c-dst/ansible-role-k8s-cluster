@@ -5,6 +5,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Role k8s_cni
+- Role k8s_cluster
+
+## 0.0.2 - 20221-12-23
+
+### Changed / Fixed
+
+- Role k8s_cri :
+  - Update default vars and syntax
+  - containerd :
+    - update download and install
+  - cri-o :
+    - update highest kubernetes supported version
+    - update apt package source list
+
 ## 0.0.1 - 20221-12-22
 
 ### Added

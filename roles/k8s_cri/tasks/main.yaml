@@ -23,7 +23,6 @@
   ansible.builtin.assert:
     that:
       - k8s_version is defined
-      - k8s_version_patch is defined
   when: cri_plugin == "crio"
   tags: always
 
@@ -31,10 +30,8 @@
   ansible.builtin.assert:
     that:
       - k8s_version <= crio_highest_k8s_version
-      - k8s_version_patch <= crio_highest_k8s_version_patch
     fail_msg:
-      "Version {{ k8s_version }}.{{ k8s_version_patch }} is greater
-      than the highest available version {{ crio_highest_k8s_version }}.{{ crio_highest_k8s_version_patch }}"
+      "Version {{ k8s_version }} is greater than the highest available version {{ crio_highest_k8s_version }}"
   when: cri_plugin == "crio"
   tags: always
 
