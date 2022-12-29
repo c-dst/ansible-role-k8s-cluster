@@ -8,4 +8,4 @@ containerd_release_version: 1.6.14
 # k8s_version: 1.26
 
 ## Kubernetes pod subnet
-cri_podSubnet: "{{ k8s_networking.podSubnet | default(undef) }}"
+cri_podSubnet: "{{ k8s_networking.podSubnet | default(false) }}"

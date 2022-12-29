@@ -54,7 +54,7 @@
     replace: '"subnet": "{{ cri_podSubnet }}"'
   register: default_replace
   failed_when: default_replace.rc !=0
-  when: cri_podSubnet is defined
+  when: cri_podSubnet
   tags:
     - configure
   notify:
