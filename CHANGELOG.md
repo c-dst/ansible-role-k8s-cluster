@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Role k8s_cni
 - Role k8s_cluster
 
+## 0.0.3 - 20221-12-29
+
+### Changed
+
+- Role k8s_cri :
+  - Update defaults, vars and syntax
+
 ## 0.0.2 - 20221-12-23
 
 ### Changed / Fixed

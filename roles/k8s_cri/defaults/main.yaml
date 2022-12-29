@@ -1,1 +1,11 @@
 ---
+# CRI : containerd
+## containerd version
+containerd_release_version: 1.6.14
+
+# Kubernetes
+## Kubernetes version
+# k8s_version: 1.26
+
+## Kubernetes pod subnet
+cri_podSubnet: "{{ k8s_networking.podSubnet | default(undef) }}"

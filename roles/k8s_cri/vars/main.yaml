@@ -4,9 +4,6 @@ cri_arch:
   x86_64: amd64
 
 # CRI : containerd
-## containerd version
-containerd_release_version: 1.6.14
-
 ## Download URL
 containerd_package_file: "cri-containerd-cni-{{ containerd_release_version }}-{{ ansible_system | lower }}-{{ cri_arch[ansible_architecture] }}.tar.gz"
 containerd_package_url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_release_version }}/{{ containerd_package_file }}"

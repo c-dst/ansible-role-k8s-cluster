@@ -51,10 +51,10 @@
   ansible.builtin.replace:
     path: /etc/cni/net.d/10-containerd-net.conflist
     regexp: '\"subnet\":\s\"(\d)+\.(\d)+\.(\d)+\.(\d)+\/(\d)+\"'
-    replace: '"subnet": "{{ k8s_networking.podSubnet }}"'
+    replace: '"subnet": "{{ cri_podSubnet }}"'
   register: default_replace
   failed_when: default_replace.rc !=0
-  when: k8s_networking.podSubnet is defined
+  when: cri_podSubnet is defined
   tags:
     - configure
   notify:
